@@ -1,3 +1,4 @@
+import os
 from functools import partial
 from pathlib import Path
 import shutil
@@ -15,7 +16,7 @@ import wandb
 
 from agent import Agent
 from coroutines.collector import make_collector, NumToCollect
-from data import BatchSampler, collate_segments_to_batch, Dataset, DatasetTraverser, CSGOHdf5Dataset
+from data import BatchSampler, collate_segments_to_batch, Dataset, DatasetTraverser, CSGOHdf5Dataset, RobocasaHdf5Dataset
 from envs import make_atari_env, WorldModelEnv
 from utils import (
     broadcast_if_needed,
@@ -80,19 +81,39 @@ class Trainer(StateDictMixin):
 
         # First time, init files hierarchy
         if not cfg.common.resume and self._rank == 0:
+
+            # remove old checkpoints
+            if self._path_ckpt_dir.exists():
+                shutil.rmtree(self._path_ckpt_dir)
+                print(f"Removed existing directory {self._path_ckpt_dir}")
+
             self._path_ckpt_dir.mkdir(exist_ok=False, parents=False)
+            # self._path_ckpt_dir.mkdir(exist_ok=True, parents=False)
             path_config = Path("config") / "trainer.yaml"
+
+            if path_config.parent.exists():
+                shutil.rmtree(path_config.parent)
+                print(f"Removed existing directory {path_config.parent}")
+
             path_config.parent.mkdir(exist_ok=False, parents=False)
+            # path_config.parent.mkdir(exist_ok=True, parents=False)
             shutil.move(".hydra/config.yaml", path_config)
             wandb.save(str(path_config))
-            shutil.copytree(src=root_dir / "src", dst="./src")
-            shutil.copytree(src=root_dir / "scripts", dst="./scripts")
+
+            shutil.copytree(src=root_dir / "src", dst="./src", dirs_exist_ok=True)
+            shutil.copytree(src=root_dir / "scripts", dst="./scripts", dirs_exist_ok=True)
         
         if cfg.env.train.id == "csgo":
             assert cfg.env.path_data_low_res is not None and cfg.env.path_data_full_res is not None, "Make sure to download CSGO data and set the relevant paths in cfg.env"
             assert self._is_static_dataset
             num_actions = cfg.env.num_actions
             dataset_full_res = CSGOHdf5Dataset(Path(cfg.env.path_data_full_res))
+
+        elif cfg.env.train.id == "robocasa":
+            assert cfg.env.path_data_low_res is not None and cfg.env.path_data_full_res is not None, "Make sure to download CSGO data and set the relevant paths in cfg.env"
+            assert self._is_static_dataset
+            num_actions = cfg.env.num_actions
+            dataset_full_res = RobocasaHdf5Dataset(Path(cfg.env.path_data_full_res))
         
         # Envs (atari only)
         else:

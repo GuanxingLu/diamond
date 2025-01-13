@@ -3,7 +3,7 @@ from typing import Generator, List, Optional
 import numpy as np
 import torch
 
-from .dataset import CSGOHdf5Dataset, Dataset
+from .dataset import CSGOHdf5Dataset, Dataset, RobocasaHdf5Dataset
 from .segment import SegmentId
 
 
@@ -19,7 +19,7 @@ class BatchSampler(torch.utils.data.Sampler):
         can_sample_beyond_end: bool = False,
     ) -> None:
         super().__init__(dataset)
-        assert isinstance(dataset, (Dataset, CSGOHdf5Dataset))
+        assert isinstance(dataset, (Dataset, CSGOHdf5Dataset, RobocasaHdf5Dataset))
         self.dataset = dataset
         self.rank = rank
         self.world_size = world_size

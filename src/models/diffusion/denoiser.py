@@ -105,7 +105,7 @@ class Denoiser(nn.Module):
         if self.is_upsampler:
             all_obs = torch.stack([x["full_res"] for x in batch.info]).to(self.device)
             low_res = F.interpolate(batch.obs.reshape(b * t, c, h, w), scale_factor=self.cfg.upsampling_factor, mode="bicubic").reshape(b, t, c, H, W)
-            assert all_obs.shape == low_res.shape
+            assert all_obs.shape == low_res.shape   # [B=4, T=3, C=3, H=512, W=512]
         else:
             all_obs = batch.obs.clone()
 
@@ -123,10 +123,10 @@ class Denoiser(nn.Module):
                 sigma_cond = None
 
             if self.is_upsampler:
-                prev_obs = torch.cat((prev_obs, low_res[:, n + i]), dim=1)
+                prev_obs = torch.cat((prev_obs, low_res[:, n + i]), dim=1)  # [B=4, C=6, H=512, W=512]
 
             sigma = self.sample_sigma_training(b, self.device)
-            noisy_obs = self.apply_noise(obs, sigma, self.cfg.sigma_offset_noise)
+            noisy_obs = self.apply_noise(obs, sigma, self.cfg.sigma_offset_noise)   # upsampler: [B=4, C=3, H=512, W=512]
 
             cs = self.compute_conditioners(sigma, sigma_cond)
             model_output = self.compute_model_output(noisy_obs, prev_obs, prev_act, cs)

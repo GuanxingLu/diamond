@@ -1,0 +1,7 @@
+train:
+  id: robocasa
+  size: [512, 512]
+num_actions: 12
+path_data_low_res: /mnt/disk_3/guanxing/diamond/datasets/robocasa/low_res  # TO DEFINE
+path_data_full_res: /mnt/disk_1/guanxing/robocasa/datasets/v0.1/single_stage/kitchen_pnp/PnPStoveToCounter/2024-05-01/ # TO DEFINE
+keymap: csgo

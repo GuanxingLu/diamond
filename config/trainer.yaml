@@ -1,21 +1,29 @@
 defaults:
   - _self_
-  - env: csgo
-  - agent: csgo
+  # - env: csgo
+  # - agent: csgo
+  - env: robocasa
+  - agent: robocasa
   - world_model_env: fast
 
 hydra:
+  run:
+    dir: outputs/diamond-robocasa  # Custom base directory for runtime
   job:
     chdir: True
 
 wandb:
-  mode: disabled
-  project: null
-  entity: null
-  name: null
-  group: null
-  tags: null
-  notes: null
+  # mode: disabled
+  # project: null
+  # entity: null
+  # name: null
+  # group: null
+  # tags: null
+  # notes: null
+  mode: online
+  project: GWM
+  # entity: guanxing
+  name: diamond-robocasa
 
 initialization:
   path_to_ckpt: null
